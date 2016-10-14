@@ -106,6 +106,11 @@ RCT_EXPORT_METHOD(disconnect:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseR
     resolve(nil);
 }
 
+RCT_EXPORT_METHOD(getConversation:(RCConversationType)type targetId:(NSString*)targetId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+   RCConversation *conversation=  [[RCIMClient sharedRCIMClient] getConversation:type targetId:targetId];
+    resolve([self.class _convertConversation:conversation]);
+}
+
 RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     NSArray *array = [[RCIMClient sharedRCIMClient] getConversationList:@[@(ConversationType_PRIVATE),
@@ -124,6 +129,26 @@ RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve reject:(RC
     }
     resolve(newArray);
 }
+
+RCT_EXPORT_METHOD(getHistoryMessages: (RCConversationType) type targetId:(NSString*) targetId objectName:(NSString*) objectName oldestMessageId:(int) oldestMessageId count:(int) count
+                  resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    NSArray *array;
+    
+    if(objectName==NULL||objectName.length==0){
+        array=[[RCIMClient sharedRCIMClient] getHistoryMessages:type targetId:targetId oldestMessageId:oldestMessageId count:count];
+    }else{
+        array=[[RCIMClient sharedRCIMClient] getHistoryMessages:type targetId:targetId objectName:objectName oldestMessageId:oldestMessageId count:count];
+    }
+    
+    NSMutableArray* newArray = [NSMutableArray new];
+    for (RCMessage* msg in array) {
+        NSDictionary* convDic = [self.class _convertMessage:msg];
+        [newArray addObject:convDic];
+    }
+    resolve(newArray);
+}
+
 
 RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSString*) targetId count:(int) count
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
@@ -144,7 +169,8 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
 {
     if ([[json valueForKey:@"type"] isEqualToString:@"image"]) {
         NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
-        [self.bridge.imageLoader loadImageWithTag:uri callback:^(NSError *error, UIImage *image) {
+      
+        [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
             dispatch_async([self methodQueue], ^(void) {
                 if (error) {
                     reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
@@ -159,12 +185,12 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
 
                                                  }
                                              success:^(long messageId){
-                                                 [_bridge.eventDispatcher sendAppEventWithName:@"msgSendOk" body:@(messageId)];
+                                                 [self sendEventWithName:@"msgSendOk" body:@(messageId)];
                                              } error:^(RCErrorCode code, long messageId){
                                                  NSMutableDictionary* dic = [NSMutableDictionary new];
                                                  dic[@"messageId"] = @(messageId);
                                                  dic[@"errCode"] = @((int)code);
-                                                 [_bridge.eventDispatcher sendAppEventWithName:@"msgSendFailed" body:dic];
+                                                 [self sendEventWithName:@"msgSendFailed" body:dic];
                                              }];
                 resolve([self.class _convertMessage:msg]);
             });
@@ -176,12 +202,12 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
     RCIMClient* client = [RCIMClient sharedRCIMClient];
     RCMessage* msg = [client sendMessage:type targetId:targetId content:content pushContent:pushContent
                 success:^(long messageId){
-                    [_bridge.eventDispatcher sendAppEventWithName:@"msgSendOk" body:@(messageId)];
+                    [self sendEventWithName:@"msgSendOk" body:@(messageId)];
                 } error:^(RCErrorCode code, long messageId){
                     NSMutableDictionary* dic = [NSMutableDictionary new];
                     dic[@"messageId"] = @(messageId);
                     dic[@"errCode"] = @((int)code);
-                    [_bridge.eventDispatcher sendAppEventWithName:@"msgSendFailed" body:dic];
+                    [self sendEventWithName:@"msgSendFailed" body:dic];
                 }];
     resolve([self.class _convertMessage:msg]);
 }
@@ -195,6 +221,11 @@ RCT_EXPORT_METHOD(insertMessage: (RCConversationType) type targetId:(NSString*) 
     resolve([self.class _convertMessage:msg]);
 }
 
+RCT_EXPORT_METHOD(setMessageReceivedStatus:(long) messageId receivedStatus:(RCReceivedStatus) receivedStatus resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    [[RCIMClient sharedRCIMClient] setMessageReceivedStatus:messageId receivedStatus:receivedStatus];
+    resolve(nil);
+    
+}
 RCT_EXPORT_METHOD(clearMessageUnreadStatus: (RCConversationType) type targetId:(NSString*) targetId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     RCIMClient* client = [RCIMClient sharedRCIMClient];
@@ -258,7 +289,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
               left:(int)nLeft
             object:(id)object
 {
-    [_bridge.eventDispatcher sendAppEventWithName:@"rongIMMsgRecved" body:[self.class _convertMessage:message]];
+    [self sendEventWithName:@"rongIMMsgRecved" body:[self.class _convertMessage:message]];
 }
 
 - (void)onConnectionStatusChanged:(RCConnectionStatus)status
@@ -308,7 +339,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
             //ignore
             return;
     }
-    [_bridge.eventDispatcher sendAppEventWithName:@"rongIMConnectionStatus" body:[dict copy]];
+    [self sendEventWithName:@"rongIMConnectionStatus" body:[dict copy]];
 }
 
 #pragma mark - private

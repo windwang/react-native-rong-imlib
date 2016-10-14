@@ -7,8 +7,9 @@
 //
 
 #import "RCTBridgeModule.h"
+#import "RCTEventEmitter.h"
 
-@interface RCTRongCloud : NSObject <RCTBridgeModule>
+@interface RCTRongCloud : RCTEventEmitter<RCTBridgeModule>
 
 + (void)registerAPI:(NSString *)aString;
 + (void)setDeviceToken:(NSData *)aToken;
