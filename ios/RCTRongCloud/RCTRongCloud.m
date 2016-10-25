@@ -180,19 +180,19 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
                 content.full = [json[@"full"] boolValue];
                 content.extra = [RCTConvert NSString:json[@"extra"]];
                 RCIMClient* client = [RCIMClient sharedRCIMClient];
-                RCMessage* msg = [client sendImageMessage:type targetId:targetId content:content pushContent:pushContent
-                                                 progress:^(int progress, long messageId) {
-
-                                                 }
-                                             success:^(long messageId){
-                                                 [self sendEventWithName:@"msgSendOk" body:@(messageId)];
-                                             } error:^(RCErrorCode code, long messageId){
-                                                 NSMutableDictionary* dic = [NSMutableDictionary new];
-                                                 dic[@"messageId"] = @(messageId);
-                                                 dic[@"errCode"] = @((int)code);
-                                                 [self sendEventWithName:@"msgSendFailed" body:dic];
-                                             }];
-                resolve([self.class _convertMessage:msg]);
+                
+                RCMessage *msg=[client sendMediaMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData progress:^(int progress, long messageId) {
+                
+                } success:^(long messageId) {
+                    [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+                } error:^(RCErrorCode errorCode, long messageId) {
+                    NSMutableDictionary* dic = [NSMutableDictionary new];
+                    dic[@"messageId"] = @(messageId);
+                    dic[@"errCode"] = @((int)errorCode);
+                    [self sendEventWithName:@"msgSendFailed" body:dic];
+                }];
+                
+             resolve([self.class _convertMessage:msg]);
             });
         }];
 
@@ -200,7 +200,16 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
     }
     RCMessageContent* content = [RCTConvert RCMessageContent:json];
     RCIMClient* client = [RCIMClient sharedRCIMClient];
-    RCMessage* msg = [client sendMessage:type targetId:targetId content:content pushContent:pushContent
+    RCMessage *msg=[client sendMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData success:^(long messageId) {
+         [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+    } error:^(RCErrorCode nErrorCode, long messageId) {
+        NSMutableDictionary* dic = [NSMutableDictionary new];
+        dic[@"messageId"] = @(messageId);
+        dic[@"errCode"] = @((int)nErrorCode);
+        [self sendEventWithName:@"msgSendFailed" body:dic];
+
+    }];
+    /*RCMessage* msg = [client sendMessage:type targetId:targetId content:content pushContent:pushContent
                 success:^(long messageId){
                     [self sendEventWithName:@"msgSendOk" body:@(messageId)];
                 } error:^(RCErrorCode code, long messageId){
@@ -208,7 +217,7 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
                     dic[@"messageId"] = @(messageId);
                     dic[@"errCode"] = @((int)code);
                     [self sendEventWithName:@"msgSendFailed" body:dic];
-                }];
+                }];*/
     resolve([self.class _convertMessage:msg]);
 }
 
@@ -217,7 +226,8 @@ RCT_EXPORT_METHOD(insertMessage: (RCConversationType) type targetId:(NSString*) 
 {
     RCMessageContent* content = [RCTConvert RCMessageContent:json];
     RCIMClient* client = [RCIMClient sharedRCIMClient];
-    RCMessage* msg = [client insertMessage:type targetId:targetId senderUserId:senderId sendStatus:SentStatus_SENT content:content];
+    RCMessage *msg=[client insertOutgoingMessage:type targetId:targetId sentStatus:SentStatus_SENT content:content];
+   // RCMessage* msg = [client insertMessage:type targetId:targetId senderUserId:senderId sendStatus:SentStatus_SENT content:content];
     resolve([self.class _convertMessage:msg]);
 }
 
