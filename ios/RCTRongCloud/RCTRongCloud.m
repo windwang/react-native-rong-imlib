@@ -7,6 +7,7 @@
 //
 
 #import "RCTRongCloud.h"
+#import "RCTEventEmitter.h"
 #import <RongIMLib/RongIMLib.h>
 #import "RCTConvert+RongCloud.h"
 #import "RCTUtils.h"
@@ -18,17 +19,18 @@
 
 @interface RCTRongCloud()<RCIMClientReceiveMessageDelegate, RCConnectionStatusChangeDelegate>
 
-@property (nonatomic, strong) NSMutableDictionary *userInfoDic;
+//@property (nonatomic, strong) NSMutableDictionary *userInfoDic;
 @property (nonatomic, strong) RCTRongCloudVoiceManager *voiceManager;
 
 @end
 
 @implementation RCTRongCloud
 
-RCT_EXPORT_MODULE(RCTRongIMLib);
+RCT_EXPORT_MODULE(RCTRongIMLib)
 
-@synthesize bridge = _bridge;
-
+- (NSArray<NSString *> *)supportedEvents {
+    return @[@"rongIMMsgRecved",@"rongIMConnectionStatus",@"msgSendOk",@"msgSendFailed"];
+}
 - (NSDictionary *)constantsToExport
 {
     return @{};
