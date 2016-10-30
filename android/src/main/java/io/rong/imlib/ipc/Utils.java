@@ -61,18 +61,18 @@ public class Utils {
     private static WritableMap convertMessageContent(MessageContent content) {
         WritableMap ret = Arguments.createMap();
         if (content instanceof TextMessage) {
-            TextMessage textContent = (TextMessage)content;
+            TextMessage textContent = (TextMessage) content;
             ret.putString("type", "text");
             ret.putString("content", textContent.getContent());
             ret.putString("extra", textContent.getExtra());
         } else if (content instanceof VoiceMessage) {
-            VoiceMessage voiceContent = (VoiceMessage)content;
+            VoiceMessage voiceContent = (VoiceMessage) content;
             ret.putString("type", "voice");
             ret.putString("uri", voiceContent.getUri().toString());
             ret.putInt("duration", voiceContent.getDuration());
             ret.putString("extra", voiceContent.getExtra());
-        } else if (content instanceof ImageMessage){
-            ImageMessage imageContent = (ImageMessage)content;
+        } else if (content instanceof ImageMessage) {
+            ImageMessage imageContent = (ImageMessage) content;
             ret.putString("type", "image");
             if (imageContent.getLocalUri() != null) {
                 ret.putString("imageUrl", imageContent.getLocalUri().toString());
@@ -80,7 +80,7 @@ public class Utils {
             ret.putString("thumb", imageContent.getThumUri().toString());
             ret.putString("extra", imageContent.getExtra());
         } else if (content instanceof CommandNotificationMessage) {
-            CommandNotificationMessage notifyContent = (CommandNotificationMessage)content;
+            CommandNotificationMessage notifyContent = (CommandNotificationMessage) content;
             ret.putString("type", "notify");
             ret.putString("name", notifyContent.getName());
             ret.putString("data", notifyContent.getData());
@@ -113,6 +113,7 @@ public class Utils {
 
     public static WritableMap convertConversation(Conversation conv) {
         WritableMap ret = Arguments.createMap();
+        if (conv == null) return ret;
         ret.putString("title", conv.getConversationTitle());
         ret.putBoolean("isTop", conv.isTop());
         ret.putString("type", conv.getConversationType().getName());
@@ -132,7 +133,7 @@ public class Utils {
     public static MessageContent convertToMessageContent(ReadableMap map) {
         String type = map.getString("type");
         if (type.equals("text")) {
-            TextMessage ret =  TextMessage.obtain(map.getString("content"));
+            TextMessage ret = TextMessage.obtain(map.getString("content"));
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
