@@ -233,7 +233,7 @@ RCT_EXPORT_METHOD(insertMessage: (RCConversationType) type targetId:(NSString*) 
     resolve([self.class _convertMessage:msg]);
 }
 
-RCT_EXPORT_METHOD(setMessageReceivedStatus:(long) messageId receivedStatus:(RCReceivedStatus) receivedStatus resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+RCT_EXPORT_METHOD(setMessageReceivedStatus:(NSInteger) messageId receivedStatus:(RCReceivedStatus) receivedStatus resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
     [[RCIMClient sharedRCIMClient] setMessageReceivedStatus:messageId receivedStatus:receivedStatus];
     resolve(nil);
     
