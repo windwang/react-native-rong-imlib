@@ -47,6 +47,50 @@
 //    return userInfo;
 }
 
+///*!
+// 未读
+// */
+//ReceivedStatus_UNREAD = 0,
+//
+///*!
+// 已读
+// */
+//ReceivedStatus_READ = 1,
+//
+///*!
+// 已听
+// 
+// @discussion 仅用于语音消息
+// */
+//ReceivedStatus_LISTENED = 2,
+//
+///*!
+// 已下载
+// */
+//ReceivedStatus_DOWNLOADED = 4,
+//
+///*!
+// 该消息已经被其他登录的多端收取过。（即改消息已经被其他端收取过后。当前端才登录，并重新拉取了这条消息。客户可以通过这个状态更新
+// UI，比如不再提示）。
+// */
+//ReceivedStatus_RETRIEVED = 8,
+//
+///*!
+// 该消息是被多端同时收取的。（即其他端正同时登录，一条消息被同时发往多端。客户可以通过这个状态值更新自己的某些
+// UI状态）。
+// */
+//ReceivedStatus_MULTIPLERECEIVE = 16,
+
+RCT_ENUM_CONVERTER(RCReceivedStatus, (@{
+                                          @"unread": @(ReceivedStatus_UNREAD),
+                                          @"read": @(ReceivedStatus_READ),
+                                          @"listened": @(ReceivedStatus_LISTENED),
+                                          @"downloaded": @(ReceivedStatus_DOWNLOADED),
+                                          @"retrieved": @(ReceivedStatus_RETRIEVED),
+                                          @"multiplereceive": @(ReceivedStatus_MULTIPLERECEIVE)
+                                          }), ReceivedStatus_READ, unsignedIntegerValue)
+
+
 RCT_ENUM_CONVERTER(RCConversationType, (@{
                                           @"private": @(ConversationType_PRIVATE),
                                           @"discussion": @(ConversationType_DISCUSSION),
