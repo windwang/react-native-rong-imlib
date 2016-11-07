@@ -451,6 +451,15 @@ RCT_EXPORT_METHOD(stopPlayVoice)
         dic[@"type"] = @"notify";
         dic[@"name"] = message.name;
         dic[@"data"] = message.data;
+    }else if([messageContent isKindOfClass:[RCRichContentMessage class]]){
+        RCRichContentMessage *message=(RCRichContentMessage*)messageContent;
+        dic[@"type"]=@"rich";
+        dic[@"imgUrl"]=message.imageURL;
+        dic[@"title"]=message.title;
+        dic[@"content"]=message.digest;
+        dic[@"url"]=message.url;
+        dic[@"extra"]=message.extra;
+        
     }
     else {
         dic[@"type"] = @"unknown";
