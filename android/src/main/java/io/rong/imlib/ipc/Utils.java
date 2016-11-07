@@ -36,6 +36,7 @@ import io.rong.imlib.model.Message;
 import io.rong.imlib.model.MessageContent;
 import io.rong.message.CommandNotificationMessage;
 import io.rong.message.ImageMessage;
+import io.rong.message.RichContentMessage;
 import io.rong.message.TextMessage;
 import io.rong.message.VoiceMessage;
 
@@ -84,6 +85,15 @@ public class Utils {
             ret.putString("type", "notify");
             ret.putString("name", notifyContent.getName());
             ret.putString("data", notifyContent.getData());
+        } else if (content instanceof RichContentMessage) {
+            RichContentMessage richContentMessage = (RichContentMessage) content;
+            ret.putString("type", "rich");
+            ret.putString("content", richContentMessage.getContent());
+            ret.putString("extra", richContentMessage.getExtra());
+            ret.putString("imgUrl", richContentMessage.getImgUrl());
+            ret.putString("url", richContentMessage.getUrl());
+            ret.putString("title", richContentMessage.getTitle());
+
         } else {
             ret.putString("type", "unknown");
         }
@@ -154,6 +164,12 @@ public class Utils {
             return ret;
         } else if (type.equals("notify")) {
             CommandNotificationMessage ret = CommandNotificationMessage.obtain(map.getString("name"), map.getString("data"));
+            return ret;
+        } else if (type.equals("rich")) {
+            RichContentMessage ret = RichContentMessage.obtain(map.getString("title"), map.getString("content"), map.getString("imgUrl"), map.getString("url"));
+            if (map.hasKey("extra")) {
+                ret.setExtra(map.getString("extra"));
+            }
             return ret;
         }
         return TextMessage.obtain("[未知消息]");
