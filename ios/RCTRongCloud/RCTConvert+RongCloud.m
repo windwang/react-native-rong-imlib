@@ -38,6 +38,14 @@
         NSString * data =[RCTConvert NSString:json[@"data"]];
         RCCommandNotificationMessage* ret = [RCCommandNotificationMessage notificationWithName:name data:data];
         return ret;
+    }else if ([@"rich" isEqualToString:type]){
+        NSString *title=json[@"title"];
+        NSString *content=json[@"content"];
+        NSString *imgUrl=json[@"imgUrl"];
+        NSString *url=json[@"url"];
+        NSString *extra=json[@"extra"];
+        RCRichContentMessage *ret=[RCRichContentMessage messageWithTitle:title digest:content imageURL:imgUrl  url:url extra:extra  ];
+        return ret;
     }
     else {
         RCTextMessage* ret = [RCTextMessage messageWithContent:@"[未知消息]"];
