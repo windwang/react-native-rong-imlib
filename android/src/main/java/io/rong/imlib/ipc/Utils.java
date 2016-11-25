@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
+import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
@@ -22,6 +23,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
+import io.rong.message.*;
 import org.w3c.dom.Text;
 
 import java.io.File;
@@ -34,11 +36,6 @@ import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
 import io.rong.imlib.model.MessageContent;
-import io.rong.message.CommandNotificationMessage;
-import io.rong.message.ImageMessage;
-import io.rong.message.RichContentMessage;
-import io.rong.message.TextMessage;
-import io.rong.message.VoiceMessage;
 
 /**
  * Created by tdzl2003 on 4/13/16.
@@ -76,9 +73,16 @@ public class Utils {
             ImageMessage imageContent = (ImageMessage) content;
             ret.putString("type", "image");
             if (imageContent.getLocalUri() != null) {
+                ret.putString("localUri", imageContent.getLocalUri().toString());
                 ret.putString("imageUrl", imageContent.getLocalUri().toString());
             }
-            ret.putString("thumb", imageContent.getThumUri().toString());
+            if (imageContent.getThumUri() != null) {
+                ret.putString("thumUri", imageContent.getThumUri().toString());
+                ret.putString("thumb", imageContent.getThumUri().toString());
+            }
+            if (imageContent.getRemoteUri() != null) {
+                ret.putString("remoteUri", imageContent.getRemoteUri().toString());
+            }
             ret.putString("extra", imageContent.getExtra());
         } else if (content instanceof CommandNotificationMessage) {
             CommandNotificationMessage notifyContent = (CommandNotificationMessage) content;
@@ -94,6 +98,17 @@ public class Utils {
             ret.putString("url", richContentMessage.getUrl());
             ret.putString("title", richContentMessage.getTitle());
 
+        } else if (content instanceof LocationMessage) {
+            LocationMessage locationMessage = (LocationMessage)content;
+            ret.putString("type", "location");
+            ret.putDouble("latitude", locationMessage.getLat());
+            ret.putDouble("longitude", locationMessage.getLng());
+            ret.putString("poi", locationMessage.getPoi());
+            if (locationMessage.getImgUri() != null) {
+                ret.putString("imgUri", locationMessage.getImgUri().toString());
+            }
+            ret.putString("base64", locationMessage.getBase64());
+            ret.putString("extra", locationMessage.getExtra());
         } else {
             ret.putString("type", "unknown");
         }
@@ -171,26 +186,15 @@ public class Utils {
                 ret.setExtra(map.getString("extra"));
             }
             return ret;
+        } else if ("location".equals(type)) { // 位置消息
+            double lat = map.getDouble("lat");
+            double lng = map.getDouble("lng");
+            String poi = map.getString("poi");
+            Uri imgUri = Uri.parse(map.getString("imgUri"));
+            return LocationMessage.obtain(lat, lng, poi, imgUri);
         }
         return TextMessage.obtain("[未知消息]");
     }
-    public static String convertMessageContentToString(MessageContent content) {
-        if (content instanceof TextMessage) {
-            TextMessage textContent = (TextMessage)content;
-            return textContent.getContent();
-        } else if (content instanceof VoiceMessage) {
-            VoiceMessage voiceContent = (VoiceMessage)content;
-            return "[语音消息]";
-        } else if (content instanceof ImageMessage){
-            ImageMessage imageContent = (ImageMessage)content;
-            return "[图片]";
-        } else if (content instanceof CommandNotificationMessage) {
-            return "[通知]";
-        } else {
-            return "[新消息]";
-        }
-    }
-
 
     public interface ImageCallback {
         void invoke(@Nullable Bitmap bitmap);

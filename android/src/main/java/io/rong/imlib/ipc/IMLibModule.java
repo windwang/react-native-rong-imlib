@@ -1,21 +1,14 @@
 package io.rong.imlib.ipc;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -34,6 +27,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import io.rong.imlib.IRongCallback;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
@@ -42,10 +36,9 @@ import io.rong.imlib.model.MessageContent;
 /**
  * Created by tdzl2003 on 3/31/16.
  */
-public class IMLibModule extends ReactContextBaseJavaModule implements RongIMClient.OnReceiveMessageListener, RongIMClient.ConnectionStatusListener ,LifecycleEventListener {
+public class IMLibModule extends ReactContextBaseJavaModule implements RongIMClient.OnReceiveMessageListener, RongIMClient.ConnectionStatusListener {
 
     static boolean isIMClientInited = false;
-    boolean hostActive = true;
 
     public IMLibModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -54,7 +47,6 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
             isIMClientInited = true;
             RongIMClient.init(reactContext.getApplicationContext());
         }
-        reactContext.addLifecycleEventListener(this);
     }
 
     @Override
@@ -71,7 +63,6 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     @Override
     public void onCatalystInstanceDestroy() {
         RongIMClient.setOnReceiveMessageListener(null);
-        RongIMClient.getInstance().disconnect();
     }
 
     private void sendDeviceEvent(String type, Object arg) {
@@ -84,35 +75,7 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     @Override
     public boolean onReceived(Message message, int i) {
         sendDeviceEvent("rongIMMsgRecved", Utils.convertMessage(message));
-        if (!hostActive) {
-            Context context = getReactApplicationContext();
-            NotificationManager mNotificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-            MessageContent content = message.getContent();
-            String title = content.getUserInfo() != null ? content.getUserInfo().getName() : message.getSenderUserId();
-
-            String contentString = Utils.convertMessageContentToString(content);
-            mBuilder.setSmallIcon(context.getApplicationInfo().icon)
-                    .setContentTitle(title)
-                    .setContentText(contentString)
-                    .setTicker(contentString)
-                    .setAutoCancel(true)
-                    .setDefaults(Notification.DEFAULT_ALL);
-
-            Intent intent = new Intent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            Uri.Builder builder = Uri.parse("rong://" + context.getPackageName()).buildUpon();
-
-            builder.appendPath("conversation").appendPath(message.getConversationType().getName())
-                    .appendQueryParameter("targetId", message.getTargetId())
-                    .appendQueryParameter("title", message.getTargetId());
-            intent.setData(builder.build());
-            mBuilder.setContentIntent(PendingIntent.getActivity(context, 0, intent, 0));
-
-            Notification notification = mBuilder.build();
-            mNotificationManager.notify(1000, notification);
-        }
-        return true;
+        return false;
     }
 
     RongIMClient client = null;
@@ -281,6 +244,31 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
                 }
             });
             return;
+        }
+        if ("location".equals(map.getString("type"))) {
+          MessageContent locationContent = Utils.convertToMessageContent(map);
+          Message locationMessage = Message.obtain(targetId, Conversation.ConversationType.valueOf(type.toUpperCase()), locationContent);
+          client.sendLocationMessage(locationMessage, null, null, new IRongCallback.ISendMessageCallback() {
+            @Override
+            public void onAttached(Message message) {
+              promise.resolve(Utils.convertMessage(message));
+            }
+
+            @Override
+            public void onError(Message message, RongIMClient.ErrorCode e) {
+              WritableMap ret = Arguments.createMap();
+              ret.putInt("messageId", message.getMessageId());
+              ret.putInt("errCode", e.getValue());
+              ret.putString("errMsg", e.getMessage());
+              sendDeviceEvent("msgSendFailed", ret);
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+              sendDeviceEvent("msgSendOk", message.getMessageId());
+            }
+          });
+          return;
         }
         client.sendMessage(Conversation.ConversationType.valueOf(type.toUpperCase()), targetId, Utils.convertToMessageContent(map), pushContent, pushData, new RongIMClient.SendMessageCallback() {
             @Override
@@ -470,21 +458,6 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
         map.putInt("code", connectionStatus.getValue());
         map.putString("message", connectionStatus.getMessage());
         this.sendDeviceEvent("rongIMConnectionStatus", map);
-    }
-
-    @Override
-    public void onHostResume() {
-        this.hostActive = true;
-    }
-
-    @Override
-    public void onHostPause() {
-        this.hostActive = false;
-    }
-
-    @Override
-    public void onHostDestroy() {
-
     }
 
     class DefaultResultCallBack<T> extends RongIMClient.ResultCallback<T> {
