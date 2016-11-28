@@ -140,16 +140,20 @@ public class Utils {
         WritableMap ret = Arguments.createMap();
         if (conv == null) return ret;
         ret.putString("title", conv.getConversationTitle());
+        ret.putString("conversationTitle", conv.getConversationTitle());
         ret.putBoolean("isTop", conv.isTop());
         ret.putString("type", conv.getConversationType().getName());
         ret.putString("targetId", conv.getTargetId());
-        ret.putString("senderUserId", conv.getSenderUserId());
-        ret.putInt("unreadCount", conv.getUnreadMessageCount());
         ret.putDouble("sentTime", conv.getSentTime());
+        ret.putString("senderUserId", conv.getSenderUserId());
+        ret.putString("senderUserName", conv.getSenderUserName());
+        ret.putString("draft", conv.getDraft());
+        ret.putString("portraitUrl", conv.getPortraitUrl());
+        ret.putInt("unreadCount", conv.getUnreadMessageCount());
+        ret.putInt("mentionedCount", conv.getMentionedCount());
+        ret.putString("notificationStatus", conv.getNotificationStatus().name());
         ret.putDouble("receivedTime", conv.getReceivedTime());
         ret.putDouble("latestMessageId", conv.getLatestMessageId());
-
-        ret.putString("conversationTitle", conv.getConversationTitle());
         ret.putMap("lastMessage", convertMessageContent(conv.getLatestMessage()));
         return ret;
 

@@ -143,6 +143,23 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
         });
     }
 
+    @ReactMethod
+    public void updateConversation(String conversationType, String targetId, String title, String portrait, final Promise promise) {
+        if (client == null) {
+            promise.reject("NotLogined", "Must call connect first.");
+            return;
+        }
+        client.updateConversationInfo(Conversation.ConversationType.valueOf(conversationType.toUpperCase()), targetId, title, portrait, new DefaultResultCallBack<Boolean>(promise));
+    }
+
+    @ReactMethod
+    public void clearMessages(String conversationType, String targetId, final Promise promise) {
+      if (client == null) {
+        promise.reject("NotLogined", "Must call connect first.");
+        return;
+      }
+      client.clearMessages(Conversation.ConversationType.valueOf(conversationType.toUpperCase()), targetId, new DefaultResultCallBack<Boolean>(promise));
+    }
 
     @ReactMethod
     public void logout(final Promise promise) {
