@@ -23,7 +23,10 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
+import io.rong.imlib.model.UserInfo;
 import io.rong.message.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.File;
@@ -112,6 +115,14 @@ public class Utils {
         } else {
             ret.putString("type", "unknown");
         }
+        UserInfo userInfo = content.getUserInfo();
+        if (userInfo != null) {
+            ret.putString("userId", userInfo.getUserId());
+            ret.putString("userName", userInfo.getName());
+            if (userInfo.getPortraitUri() != null) {
+                ret.putString("portraitUri", userInfo.getPortraitUri().toString());
+            }
+        }
         return ret;
     }
 
@@ -159,6 +170,17 @@ public class Utils {
 
     }
 
+    public static void setMessageUserInfo(MessageContent messageContent, ReadableMap map) {
+        if (map.hasKey("user")) {
+          try {
+            JSONObject user = new JSONObject(map.getString("user"));
+            messageContent.setUserInfo(messageContent.parseJsonToUserInfo(user));
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+        }
+    }
+
     public static MessageContent convertToMessageContent(ReadableMap map) {
         String type = map.getString("type");
         if (type.equals("text")) {
@@ -166,6 +188,7 @@ public class Utils {
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
+            setMessageUserInfo(ret, map);
             return ret;
         } else if (type.equals("voice")) {
             VoiceMessage ret = VoiceMessage.obtain(Uri.parse(map.getString("uri")), map.getInt("duration"));
@@ -173,6 +196,7 @@ public class Utils {
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
+            setMessageUserInfo(ret, map);
             return ret;
         } else if (type.equals("image")) {
             String uri = map.getString("imageUrl");
@@ -180,6 +204,7 @@ public class Utils {
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
+            setMessageUserInfo(ret, map);
             return ret;
         } else if (type.equals("notify")) {
             CommandNotificationMessage ret = CommandNotificationMessage.obtain(map.getString("name"), map.getString("data"));
@@ -189,13 +214,19 @@ public class Utils {
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
+            setMessageUserInfo(ret, map);
             return ret;
         } else if ("location".equals(type)) { // 位置消息
             double lat = map.getDouble("lat");
             double lng = map.getDouble("lng");
             String poi = map.getString("poi");
             Uri imgUri = Uri.parse(map.getString("imgUri"));
-            return LocationMessage.obtain(lat, lng, poi, imgUri);
+            LocationMessage ret = LocationMessage.obtain(lat, lng, poi, imgUri);
+            if (map.hasKey("extra")) {
+              ret.setExtra(map.getString("extra"));
+            }
+            setMessageUserInfo(ret, map);
+            return ret;
         }
         return TextMessage.obtain("[未知消息]");
     }
