@@ -115,13 +115,15 @@ public class Utils {
         } else {
             ret.putString("type", "unknown");
         }
-        UserInfo userInfo = content.getUserInfo();
-        if (userInfo != null) {
+        if (content != null) {
+          UserInfo userInfo = content.getUserInfo();
+          if (userInfo != null) {
             ret.putString("userId", userInfo.getUserId());
             ret.putString("userName", userInfo.getName());
             if (userInfo.getPortraitUri() != null) {
-                ret.putString("portraitUri", userInfo.getPortraitUri().toString());
+              ret.putString("portraitUri", userInfo.getPortraitUri().toString());
             }
+          }
         }
         return ret;
     }
