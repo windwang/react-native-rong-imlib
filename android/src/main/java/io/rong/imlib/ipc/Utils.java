@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
-import android.location.Location;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.facebook.common.executors.UiThreadImmediateExecutorService;
@@ -25,17 +25,15 @@ import com.facebook.react.bridge.WritableMap;
 
 import io.rong.imlib.model.UserInfo;
 import io.rong.message.*;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
 import io.rong.imlib.model.MessageContent;
@@ -102,7 +100,7 @@ public class Utils {
             ret.putString("title", richContentMessage.getTitle());
 
         } else if (content instanceof LocationMessage) {
-            LocationMessage locationMessage = (LocationMessage)content;
+            LocationMessage locationMessage = (LocationMessage) content;
             ret.putString("type", "location");
             ret.putDouble("latitude", locationMessage.getLat());
             ret.putDouble("longitude", locationMessage.getLng());
@@ -116,16 +114,27 @@ public class Utils {
             ret.putString("type", "unknown");
         }
         if (content != null) {
-          UserInfo userInfo = content.getUserInfo();
-          if (userInfo != null) {
-            ret.putString("userId", userInfo.getUserId());
-            ret.putString("userName", userInfo.getName());
-            if (userInfo.getPortraitUri() != null) {
-              ret.putString("portraitUri", userInfo.getPortraitUri().toString());
+            UserInfo userInfo = content.getUserInfo();
+            if (userInfo != null) {
+                ret.putMap("userInfo", convertUserInfo(userInfo));
             }
-          }
         }
         return ret;
+    }
+
+    public static UserInfo convertUserInfo(ReadableMap map) {
+        return new UserInfo(map.getString("id"), map.getString("name"), Uri.parse(map.getString("portraitUri")));
+    }
+
+    @NonNull
+    private static WritableMap convertUserInfo(UserInfo userInfo) {
+        WritableMap userMap = Arguments.createMap();
+        userMap.putString("userId", userInfo.getUserId());
+        userMap.putString("name", userInfo.getName());
+        if (userInfo.getPortraitUri() != null) {
+            userMap.putString("portraitUri", userInfo.getPortraitUri().toString());
+        }
+        return userMap;
     }
 
     public static WritableArray convertMessageList(List<Message> messages) {
@@ -173,15 +182,16 @@ public class Utils {
     }
 
     public static void setMessageUserInfo(MessageContent messageContent, ReadableMap map) {
-        if (map.hasKey("user")) {
-          try {
-            JSONObject user = new JSONObject(map.getString("user"));
-            messageContent.setUserInfo(messageContent.parseJsonToUserInfo(user));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+        if (map.hasKey("userInfo")) {
+            try {
+                JSONObject user = new JSONObject(map.getString("userInfo"));
+                messageContent.setUserInfo(messageContent.parseJsonToUserInfo(user));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
+
 
     public static MessageContent convertToMessageContent(ReadableMap map) {
         String type = map.getString("type");
@@ -225,7 +235,7 @@ public class Utils {
             Uri imgUri = Uri.parse(map.getString("imgUri"));
             LocationMessage ret = LocationMessage.obtain(lat, lng, poi, imgUri);
             if (map.hasKey("extra")) {
-              ret.setExtra(map.getString("extra"));
+                ret.setExtra(map.getString("extra"));
             }
             setMessageUserInfo(ret, map);
             return ret;

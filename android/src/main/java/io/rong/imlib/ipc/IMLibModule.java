@@ -32,6 +32,7 @@ import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
 import io.rong.imlib.model.MessageContent;
+import io.rong.imlib.model.UserInfo;
 
 /**
  * Created by tdzl2003 on 3/31/16.
@@ -63,6 +64,7 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     @Override
     public void onCatalystInstanceDestroy() {
         RongIMClient.setOnReceiveMessageListener(null);
+        RongIMClient.getInstance().disconnect();
     }
 
     private void sendDeviceEvent(String type, Object arg) {
@@ -75,10 +77,25 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     @Override
     public boolean onReceived(Message message, int i) {
         sendDeviceEvent("rongIMMsgRecved", Utils.convertMessage(message));
-        return false;
+        return true;
     }
 
     RongIMClient client = null;
+
+    UserInfo userInfo = null;
+
+    /**
+     * 设置当前的userinfo
+     *
+     * @param map
+     * @param promise
+     */
+    @ReactMethod
+    public void setCurrentUserInfo(final ReadableMap map, final Promise promise) {
+        this.userInfo = Utils.convertUserInfo(map);
+        promise.resolve(true);
+
+    }
 
     @ReactMethod
     public void connect(String token, final Promise promise) {
@@ -154,11 +171,11 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
 
     @ReactMethod
     public void clearMessages(String conversationType, String targetId, final Promise promise) {
-      if (client == null) {
-        promise.reject("NotLogined", "Must call connect first.");
-        return;
-      }
-      client.clearMessages(Conversation.ConversationType.valueOf(conversationType.toUpperCase()), targetId, new DefaultResultCallBack<Boolean>(promise));
+        if (client == null) {
+            promise.reject("NotLogined", "Must call connect first.");
+            return;
+        }
+        client.clearMessages(Conversation.ConversationType.valueOf(conversationType.toUpperCase()), targetId, new DefaultResultCallBack<Boolean>(promise));
     }
 
     @ReactMethod
@@ -210,6 +227,12 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
 
     }
 
+    private void attachUserInfo(MessageContent messageContent) {
+        if (this.userInfo == null) return;
+        messageContent.setUserInfo(userInfo);
+    }
+
+
     @ReactMethod
     public void sendMessage(final String type, final String targetId, final ReadableMap map, final String pushContent, final String pushData, final Promise promise) {
         if (client == null) {
@@ -217,77 +240,16 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
             return;
         }
         if ("image".equals(map.getString("type"))) {
-            Utils.getImage(Uri.parse(map.getString("imageUrl")), null, new Utils.ImageCallback() {
-
-                @Override
-                public void invoke(@Nullable Bitmap bitmap) {
-                    if (bitmap == null) {
-                        promise.reject("loadImageFailed", "Cannot open image uri ");
-                        return;
-                    }
-                    MessageContent content;
-                    try {
-                        content = Utils.convertImageMessageContent(getReactApplicationContext(), bitmap);
-                    } catch (Throwable e) {
-                        promise.reject("cacheImageFailed", e);
-                        return;
-                    }
-                    client.sendImageMessage(Conversation.ConversationType.valueOf(type.toUpperCase()), targetId, content, pushContent, pushData, new RongIMClient.SendImageMessageCallback() {
-
-                        @Override
-                        public void onAttached(Message message) {
-                            promise.resolve(Utils.convertMessage(message));
-                        }
-
-                        @Override
-                        public void onError(Message message, RongIMClient.ErrorCode e) {
-                            WritableMap ret = Arguments.createMap();
-                            ret.putInt("messageId", message.getMessageId());
-                            ret.putInt("errCode", e.getValue());
-                            ret.putString("errMsg", e.getMessage());
-                            sendDeviceEvent("msgSendFailed", ret);
-                        }
-
-                        @Override
-                        public void onSuccess(Message message) {
-                            sendDeviceEvent("msgSendOk", message.getMessageId());
-                        }
-
-                        @Override
-                        public void onProgress(Message message, int i) {
-
-                        }
-                    });
-                }
-            });
+            sendImageMessage(type, targetId, map, pushContent, pushData, promise);
             return;
         }
         if ("location".equals(map.getString("type"))) {
-          MessageContent locationContent = Utils.convertToMessageContent(map);
-          Message locationMessage = Message.obtain(targetId, Conversation.ConversationType.valueOf(type.toUpperCase()), locationContent);
-          client.sendLocationMessage(locationMessage, null, null, new IRongCallback.ISendMessageCallback() {
-            @Override
-            public void onAttached(Message message) {
-              promise.resolve(Utils.convertMessage(message));
-            }
-
-            @Override
-            public void onError(Message message, RongIMClient.ErrorCode e) {
-              WritableMap ret = Arguments.createMap();
-              ret.putInt("messageId", message.getMessageId());
-              ret.putInt("errCode", e.getValue());
-              ret.putString("errMsg", e.getMessage());
-              sendDeviceEvent("msgSendFailed", ret);
-            }
-
-            @Override
-            public void onSuccess(Message message) {
-              sendDeviceEvent("msgSendOk", message.getMessageId());
-            }
-          });
-          return;
+            setLocationMessage(type, targetId, map, pushContent, pushData, promise);
+            return;
         }
-        client.sendMessage(Conversation.ConversationType.valueOf(type.toUpperCase()), targetId, Utils.convertToMessageContent(map), pushContent, pushData, new RongIMClient.SendMessageCallback() {
+        MessageContent messageContent = Utils.convertToMessageContent(map);
+        attachUserInfo(messageContent);
+        client.sendMessage(Conversation.ConversationType.valueOf(type.toUpperCase()), targetId, messageContent, pushContent, pushData, new RongIMClient.SendMessageCallback() {
             @Override
             public void onError(Integer messageId, RongIMClient.ErrorCode e) {
                 WritableMap ret = Arguments.createMap();
@@ -304,6 +266,79 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
             }
 
         }, new MessageCallBack(promise));
+    }
+
+    private void setLocationMessage(String type, String targetId, ReadableMap map, final String pushContent, final String pushData, final Promise promise) {
+        MessageContent locationContent = Utils.convertToMessageContent(map);
+        attachUserInfo(locationContent);
+        Message locationMessage = Message.obtain(targetId, Conversation.ConversationType.valueOf(type.toUpperCase()), locationContent);
+        client.sendLocationMessage(locationMessage, pushContent, pushData, new IRongCallback.ISendMessageCallback() {
+            @Override
+            public void onAttached(Message message) {
+                promise.resolve(Utils.convertMessage(message));
+            }
+
+            @Override
+            public void onError(Message message, RongIMClient.ErrorCode e) {
+                WritableMap ret = Arguments.createMap();
+                ret.putInt("messageId", message.getMessageId());
+                ret.putInt("errCode", e.getValue());
+                ret.putString("errMsg", e.getMessage());
+                sendDeviceEvent("msgSendFailed", ret);
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                sendDeviceEvent("msgSendOk", message.getMessageId());
+            }
+        });
+    }
+
+    private void sendImageMessage(final String type, final String targetId, ReadableMap map, final String pushContent, final String pushData, final Promise promise) {
+        Utils.getImage(Uri.parse(map.getString("imageUrl")), null, new Utils.ImageCallback() {
+
+            @Override
+            public void invoke(@Nullable Bitmap bitmap) {
+                if (bitmap == null) {
+                    promise.reject("loadImageFailed", "Cannot open image uri ");
+                    return;
+                }
+                MessageContent content;
+                try {
+                    content = Utils.convertImageMessageContent(getReactApplicationContext(), bitmap);
+                } catch (Throwable e) {
+                    promise.reject("cacheImageFailed", e);
+                    return;
+                }
+                attachUserInfo(content);
+                client.sendImageMessage(Conversation.ConversationType.valueOf(type.toUpperCase()), targetId, content, pushContent, pushData, new RongIMClient.SendImageMessageCallback() {
+
+                    @Override
+                    public void onAttached(Message message) {
+                        promise.resolve(Utils.convertMessage(message));
+                    }
+
+                    @Override
+                    public void onError(Message message, RongIMClient.ErrorCode e) {
+                        WritableMap ret = Arguments.createMap();
+                        ret.putInt("messageId", message.getMessageId());
+                        ret.putInt("errCode", e.getValue());
+                        ret.putString("errMsg", e.getMessage());
+                        sendDeviceEvent("msgSendFailed", ret);
+                    }
+
+                    @Override
+                    public void onSuccess(Message message) {
+                        sendDeviceEvent("msgSendOk", message.getMessageId());
+                    }
+
+                    @Override
+                    public void onProgress(Message message, int i) {
+
+                    }
+                });
+            }
+        });
     }
 
     @ReactMethod
