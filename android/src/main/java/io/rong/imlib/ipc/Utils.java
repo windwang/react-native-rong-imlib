@@ -123,7 +123,7 @@ public class Utils {
     }
 
     public static UserInfo convertUserInfo(ReadableMap map) {
-        return new UserInfo(map.getString("id"), map.getString("name"), Uri.parse(map.getString("portraitUri")));
+        return new UserInfo(map.getString("userId"), map.getString("name"), Uri.parse(map.getString("portraitUri")));
     }
 
     @NonNull
