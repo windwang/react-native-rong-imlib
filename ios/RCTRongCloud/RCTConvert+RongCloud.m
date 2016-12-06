@@ -13,11 +13,15 @@
 + (RCMessageContent *)RCMessageContent:(id)json;
 {
     json = [self NSDictionary:json];
+    
+    NSDictionary *user=[json dictionaryForKey:@"userInfo" ];
+    
     NSString *type = [RCTConvert NSString:json[@"type"]];
     
     if ([@"text" isEqualToString:type]) {
         RCTextMessage* ret = [RCTextMessage messageWithContent:json[@"content"]];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
+         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"voice" isEqualToString:type]) {
         NSString *base64 = [RCTConvert NSString:json[@"base64"]];
@@ -26,17 +30,21 @@
         
         RCVoiceMessage *ret = [RCVoiceMessage messageWithAudio:voice duration:duration];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
+         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"image" isEqualToString:type]) {
         NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
         RCImageMessage *ret = [RCImageMessage messageWithImageURI:uri];
+      
         ret.full = [json[@"full"] boolValue];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
+         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"notify" isEqualToString:type]) {
         NSString * name = [RCTConvert NSString:json[@"name"]];
         NSString * data =[RCTConvert NSString:json[@"data"]];
         RCCommandNotificationMessage* ret = [RCCommandNotificationMessage notificationWithName:name data:data];
+         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     }else if ([@"rich" isEqualToString:type]){
         NSString *title=json[@"title"];
@@ -44,15 +52,25 @@
         NSString *imgUrl=json[@"imgUrl"];
         NSString *url=json[@"url"];
         NSString *extra=json[@"extra"];
+        
         RCRichContentMessage *ret=[RCRichContentMessage messageWithTitle:title digest:content imageURL:imgUrl  url:url extra:extra  ];
+        
+        [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
-    }
-    else {
+    }    else {
         RCTextMessage* ret = [RCTextMessage messageWithContent:@"[未知消息]"];
         return ret;
     }
 //    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:json[@"userId"] name:json[@"name"] portrait:json[@"portraitUri"]];
 //    return userInfo;
+}
+
++(RCUserInfo *)RCUserInfo:(id)json;
+{
+    if(json==NULL)return NULL;
+    json = [self NSDictionary:json];
+    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:json[@"userId"] name:json[@"name"] portrait:json[@"portraitUri"]];
+    return userInfo;
 }
 
 ///*!
@@ -89,14 +107,14 @@
 // */
 //ReceivedStatus_MULTIPLERECEIVE = 16,
 
-RCT_ENUM_CONVERTER(RCReceivedStatus, (@{
-                                          @"unread": @(ReceivedStatus_UNREAD),
-                                          @"read": @(ReceivedStatus_READ),
-                                          @"listened": @(ReceivedStatus_LISTENED),
-                                          @"downloaded": @(ReceivedStatus_DOWNLOADED),
-                                          @"retrieved": @(ReceivedStatus_RETRIEVED),
-                                          @"multiplereceive": @(ReceivedStatus_MULTIPLERECEIVE)
-                                          }), ReceivedStatus_READ, unsignedIntegerValue)
+//RCT_ENUM_CONVERTER(RCReceivedStatus, (@{
+//                                          @"unread": @(ReceivedStatus_UNREAD),
+//                                          @"read": @(ReceivedStatus_READ),
+//                                          @"listened": @(ReceivedStatus_LISTENED),
+//                                          @"downloaded": @(ReceivedStatus_DOWNLOADED),
+//                                          @"retrieved": @(ReceivedStatus_RETRIEVED),
+//                                          @"multiplereceive": @(ReceivedStatus_MULTIPLERECEIVE)
+//                                          }), ReceivedStatus_READ, unsignedIntegerValue)
 
 
 RCT_ENUM_CONVERTER(RCConversationType, (@{

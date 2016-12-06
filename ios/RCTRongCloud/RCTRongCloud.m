@@ -19,7 +19,7 @@
 
 @interface RCTRongCloud()<RCIMClientReceiveMessageDelegate, RCConnectionStatusChangeDelegate>
 
-//@property (nonatomic, strong) NSMutableDictionary *userInfoDic;
+@property (nonatomic, strong) RCUserInfo *userInfo;
 @property (nonatomic, strong) RCTRongCloudVoiceManager *voiceManager;
 
 @end
@@ -77,6 +77,10 @@ RCT_EXPORT_MODULE(RCTRongIMLib)
      withString:@""];
 
     [[RCIMClient sharedRCIMClient] setDeviceToken:token];
+}
+RCT_EXPORT_METHOD(setCurrentUserInfo:(NSDictionary*) json){
+    _userInfo=[RCTConvert RCUserInfo:json];
+    [[RCIMClient sharedRCIMClient] setCurrentUserInfo:_userInfo];
 }
 
 RCT_EXPORT_METHOD(connect:(NSString *)token resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
@@ -164,43 +168,90 @@ RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSStrin
     }
     resolve(newArray);
 }
+- (void)sendImageMessage:(RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json pushContent: (NSString*) pushContent pushData:(NSString*) pushData
+resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
+    NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
+    
+    [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
+        dispatch_async([self methodQueue], ^(void) {
+            if (error) {
+                reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
+                return;
+            }
+            RCImageMessage *content = [RCImageMessage messageWithImage:image];
+            [content setSenderUserInfo:_userInfo];
+            content.full = [json[@"full"] boolValue];
+            content.extra = [RCTConvert NSString:json[@"extra"]];
+            RCIMClient* client = [RCIMClient sharedRCIMClient];
+            
+            RCMessage *msg=[client sendMediaMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData progress:^(int progress, long messageId) {
+                
+            } success:^(long messageId) {
+                [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+            } error:^(RCErrorCode errorCode, long messageId) {
+                NSMutableDictionary* dic = [NSMutableDictionary new];
+                dic[@"messageId"] = @(messageId);
+                dic[@"errCode"] = @((int)errorCode);
+                [self sendEventWithName:@"msgSendFailed" body:dic];
+            }];
+            
+            resolve([self.class _convertMessage:msg]);
+        });
+    }];
+    
+    return;
+}
+- (void)sendLocationMessage:(RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json pushContent: (NSString*) pushContent pushData:(NSString*) pushData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
+    
+    NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
+    
+    [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
+        dispatch_async([self methodQueue], ^(void) {
+            if (error) {
+                reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
+                return;
+            }
+            CLLocationCoordinate2D location=CLLocationCoordinate2DMake([[json objectForKey:@"lat"] doubleValue],[[json objectForKey:@"lng"] doubleValue]);
+            RCLocationMessage *content = [RCLocationMessage messageWithLocationImage:image location:location locationName:[json valueForKey:@"poi"]];
+            [content setSenderUserInfo:_userInfo];
+            
+            RCIMClient* client = [RCIMClient sharedRCIMClient];
+            RCMessage *msg=[client sendMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData success:^(long messageId) {
+                [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+            } error:^(RCErrorCode nErrorCode, long messageId) {
+                NSMutableDictionary* dic = [NSMutableDictionary new];
+                dic[@"messageId"] = @(messageId);
+                dic[@"errCode"] = @((int)nErrorCode);
+                [self sendEventWithName:@"msgSendFailed" body:dic];
+                
+            }];
+            
+            resolve([self.class _convertMessage:msg]);
+
+           
+        });
+    }];
+
+    
+    
+    return;
+}
 
 RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json
                   pushContent: (NSString*) pushContent pushData:(NSString*) pushData
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
-    if ([[json valueForKey:@"type"] isEqualToString:@"image"]) {
-        NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
-      
-        [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
-            dispatch_async([self methodQueue], ^(void) {
-                if (error) {
-                    reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
-                    return;
-                }
-                RCImageMessage *content = [RCImageMessage messageWithImage:image];
-                content.full = [json[@"full"] boolValue];
-                content.extra = [RCTConvert NSString:json[@"extra"]];
-                RCIMClient* client = [RCIMClient sharedRCIMClient];
-                
-                RCMessage *msg=[client sendMediaMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData progress:^(int progress, long messageId) {
-                
-                } success:^(long messageId) {
-                    [self sendEventWithName:@"msgSendOk" body:@(messageId)];
-                } error:^(RCErrorCode errorCode, long messageId) {
-                    NSMutableDictionary* dic = [NSMutableDictionary new];
-                    dic[@"messageId"] = @(messageId);
-                    dic[@"errCode"] = @((int)errorCode);
-                    [self sendEventWithName:@"msgSendFailed" body:dic];
-                }];
-                
-             resolve([self.class _convertMessage:msg]);
-            });
-        }];
 
+    if ([[json valueForKey:@"type"] isEqualToString:@"image"]) {
+        [self sendImageMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
+        return;
+    }
+    if ([[json valueForKey:@"type"] isEqualToString:@"location"]) {
+        [self sendLocationMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
         return;
     }
     RCMessageContent* content = [RCTConvert RCMessageContent:json];
+    [content setSenderUserInfo:_userInfo];
     RCIMClient* client = [RCIMClient sharedRCIMClient];
     RCMessage *msg=[client sendMessage:type targetId:targetId content:content pushContent:pushContent pushData:pushData success:^(long messageId) {
          [self sendEventWithName:@"msgSendOk" body:@(messageId)];
@@ -211,15 +262,7 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
         [self sendEventWithName:@"msgSendFailed" body:dic];
 
     }];
-    /*RCMessage* msg = [client sendMessage:type targetId:targetId content:content pushContent:pushContent
-                success:^(long messageId){
-                    [self sendEventWithName:@"msgSendOk" body:@(messageId)];
-                } error:^(RCErrorCode code, long messageId){
-                    NSMutableDictionary* dic = [NSMutableDictionary new];
-                    dic[@"messageId"] = @(messageId);
-                    dic[@"errCode"] = @((int)code);
-                    [self sendEventWithName:@"msgSendFailed" body:dic];
-                }];*/
+
     resolve([self.class _convertMessage:msg]);
 }
 
@@ -460,9 +503,25 @@ RCT_EXPORT_METHOD(stopPlayVoice)
         dic[@"url"]=message.url;
         dic[@"extra"]=message.extra;
         
-    }
-    else {
+    }else if([messageContent isKindOfClass:[RCLocationMessage class]]){
+        RCLocationMessage *message=(RCLocationMessage*)messageContent;
+        dic[@"type"]=@"location";
+        dic[@"imgUrl"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
+        dic[@"poi"]=message.locationName;
+        dic[@"lat"]=@(message.location.latitude);
+        dic[@"lng"]=@(message.location.longitude);
+        dic[@"extra"]=message.extra;
+        
+    } else {
         dic[@"type"] = @"unknown";
+    }
+    if(messageContent.senderUserInfo!=NULL){
+        NSMutableDictionary *user = [NSMutableDictionary new];
+        [user setValue:messageContent.senderUserInfo.userId forKey:@"userId"];
+        [user setValue:messageContent.senderUserInfo.name forKey:@"name"];
+        [user setValue:messageContent.senderUserInfo.portraitUri forKey:@"portraitUri"];
+        [dic  setValue:user forKey:@"userInfo"];
+        //dic[@"userInfo"]=user;
     }
     return dic;
 }

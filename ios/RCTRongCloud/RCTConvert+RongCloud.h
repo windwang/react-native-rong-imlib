@@ -12,5 +12,6 @@
 @interface RCTConvert(RongCloud)
 
 + (RCMessageContent *)RCMessageContent:(id)json;
++ (RCUserInfo *)RCUserInfo:(id)json;
 
 @end
