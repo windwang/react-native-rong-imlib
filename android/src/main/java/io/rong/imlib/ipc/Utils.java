@@ -204,7 +204,7 @@ public class Utils {
             return ret;
         } else if (type.equals("voice")) {
             VoiceMessage ret = VoiceMessage.obtain(Uri.parse(map.getString("uri")), map.getInt("duration"));
-//            ret.setBase64(map.getString("base64"));
+            // ret.setBase64(map.getString("base64"));
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
@@ -232,8 +232,8 @@ public class Utils {
             double lat = map.getDouble("lat");
             double lng = map.getDouble("lng");
             String poi = map.getString("poi");
-            Uri imgUri = Uri.parse(map.getString("imageUrl"));
-            LocationMessage ret = LocationMessage.obtain(lat, lng, poi, imgUri);
+            // Uri imgUri = Uri.parse(map.getString("imageUrl"));
+            LocationMessage ret = LocationMessage.obtain(lat, lng, poi, null);
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
