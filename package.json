@@ -1,73 +1,15 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "react-native-rong-imlib@github:windwang/react-native-rong-imlib",
-        "scope": null,
-        "escapedName": "react-native-rong-imlib",
-        "name": "react-native-rong-imlib",
-        "rawSpec": "github:windwang/react-native-rong-imlib",
-        "spec": "github:windwang/react-native-rong-imlib",
-        "type": "hosted",
-        "hosted": {
-          "type": "github",
-          "ssh": "git@github.com:windwang/react-native-rong-imlib.git",
-          "sshUrl": "git+ssh://git@github.com/windwang/react-native-rong-imlib.git",
-          "httpsUrl": "git+https://github.com/windwang/react-native-rong-imlib.git",
-          "gitUrl": "git://github.com/windwang/react-native-rong-imlib.git",
-          "shortcut": "github:windwang/react-native-rong-imlib",
-          "directUrl": "https://raw.githubusercontent.com/windwang/react-native-rong-imlib/master/package.json"
-        }
-      },
-      "E:\\Workspace\\VSCode\\school-react-native-app"
-    ]
-  ],
-  "_from": "windwang/react-native-rong-imlib",
-  "_id": "react-native-rong-imlib@0.0.5",
-  "_inCache": true,
-  "_installable": true,
-  "_location": "/react-native-rong-imlib",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "react-native-rong-imlib@github:windwang/react-native-rong-imlib",
-    "scope": null,
-    "escapedName": "react-native-rong-imlib",
-    "name": "react-native-rong-imlib",
-    "rawSpec": "github:windwang/react-native-rong-imlib",
-    "spec": "github:windwang/react-native-rong-imlib",
-    "type": "hosted",
-    "hosted": {
-      "type": "github",
-      "ssh": "git@github.com:windwang/react-native-rong-imlib.git",
-      "sshUrl": "git+ssh://git@github.com/windwang/react-native-rong-imlib.git",
-      "httpsUrl": "git+https://github.com/windwang/react-native-rong-imlib.git",
-      "gitUrl": "git://github.com/windwang/react-native-rong-imlib.git",
-      "shortcut": "github:windwang/react-native-rong-imlib",
-      "directUrl": "https://raw.githubusercontent.com/windwang/react-native-rong-imlib/master/package.json"
-    }
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "git://github.com/windwang/react-native-rong-imlib.git#4d3f8c291af12275ab9b039f2ab545a03c3d6570",
-  "_shasum": "618a2f6c5722b6520321ebcca29fc08613c926a9",
-  "_shrinkwrap": null,
-  "_spec": "react-native-rong-imlib@github:windwang/react-native-rong-imlib",
-  "_where": "E:\\Workspace\\VSCode\\school-react-native-app",
-  "author": {
-    "name": "reactnativecn"
-  },
-  "bugs": {
-    "url": "https://github.com/reactnativecn/react-native-rong-imlib/issues"
-  },
-  "dependencies": {
-    "fbemitter": "^2.0.2"
-  },
+  "name": "react-native-rong-imlib",
+  "version": "0.1.2",
   "description": "React Native下的融云SDK (IMLib) 封装",
-  "devDependencies": {},
-  "gitHead": "4d3f8c291af12275ab9b039f2ab545a03c3d6570",
-  "homepage": "https://github.com/reactnativecn/react-native-rong-imlib#readme",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reactnativecn/react-native-rong-imlib.git"
+  },
   "keywords": [
     "react",
     "native",
@@ -77,20 +19,16 @@
     "im",
     "chat"
   ],
+  "author": "reactnativecn",
   "license": "ISC",
-  "main": "src/index",
-  "name": "react-native-rong-imlib",
-  "optionalDependencies": {},
+  "bugs": {
+    "url": "https://github.com/reactnativecn/react-native-rong-imlib/issues"
+  },
   "peerDependencies": {
     "react-native": ">=0.18.0"
   },
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/reactnativecn/react-native-rong-imlib.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "0.0.5"
+  "homepage": "https://github.com/reactnativecn/react-native-rong-imlib#readme",
+  "dependencies": {
+    "fbemitter": "^2.0.2"
+  }
 }
