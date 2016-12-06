@@ -203,16 +203,16 @@ resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
 }
 - (void)sendLocationMessage:(RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json pushContent: (NSString*) pushContent pushData:(NSString*) pushData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
     
-    NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
+   // NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
     
-    [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
-        dispatch_async([self methodQueue], ^(void) {
-            if (error) {
-                reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
-                return;
-            }
+//    [self.bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:uri] callback:^(NSError *error, UIImage *image) {
+//        dispatch_async([self methodQueue], ^(void) {
+//            if (error) {
+//                reject([NSString stringWithFormat: @"%lu", (long)error.code], error.localizedDescription, error);
+//                return;
+//            }
             CLLocationCoordinate2D location=CLLocationCoordinate2DMake([[json objectForKey:@"lat"] doubleValue],[[json objectForKey:@"lng"] doubleValue]);
-            RCLocationMessage *content = [RCLocationMessage messageWithLocationImage:image location:location locationName:[json valueForKey:@"poi"]];
+            RCLocationMessage *content = [RCLocationMessage messageWithLocationImage:nil location:location locationName:[json valueForKey:@"poi"]];
             [content setSenderUserInfo:_userInfo];
             
             RCIMClient* client = [RCIMClient sharedRCIMClient];
@@ -229,8 +229,8 @@ resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
             resolve([self.class _convertMessage:msg]);
 
            
-        });
-    }];
+//        });
+//    }];
 
     
     
