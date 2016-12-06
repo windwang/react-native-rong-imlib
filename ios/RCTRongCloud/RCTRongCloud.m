@@ -497,7 +497,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
     }else if([messageContent isKindOfClass:[RCRichContentMessage class]]){
         RCRichContentMessage *message=(RCRichContentMessage*)messageContent;
         dic[@"type"]=@"rich";
-        dic[@"imgUrl"]=message.imageURL;
+        dic[@"imageUrl"]=message.imageURL;
         dic[@"title"]=message.title;
         dic[@"content"]=message.digest;
         dic[@"url"]=message.url;
@@ -506,7 +506,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
     }else if([messageContent isKindOfClass:[RCLocationMessage class]]){
         RCLocationMessage *message=(RCLocationMessage*)messageContent;
         dic[@"type"]=@"location";
-        dic[@"imgUrl"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
+        dic[@"imageUrl"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
         dic[@"poi"]=message.locationName;
         dic[@"lat"]=@(message.location.latitude);
         dic[@"lng"]=@(message.location.longitude);

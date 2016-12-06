@@ -95,7 +95,7 @@ public class Utils {
             ret.putString("type", "rich");
             ret.putString("content", richContentMessage.getContent());
             ret.putString("extra", richContentMessage.getExtra());
-            ret.putString("imgUrl", richContentMessage.getImgUrl());
+            ret.putString("imageUrl", richContentMessage.getImgUrl());
             ret.putString("url", richContentMessage.getUrl());
             ret.putString("title", richContentMessage.getTitle());
 
@@ -106,7 +106,7 @@ public class Utils {
             ret.putDouble("longitude", locationMessage.getLng());
             ret.putString("poi", locationMessage.getPoi());
             if (locationMessage.getImgUri() != null) {
-                ret.putString("imgUrl", locationMessage.getImgUri().toString());
+                ret.putString("imageUrl", locationMessage.getImgUri().toString());
             }
             ret.putString("base64", locationMessage.getBase64());
             ret.putString("extra", locationMessage.getExtra());
@@ -222,7 +222,7 @@ public class Utils {
             CommandNotificationMessage ret = CommandNotificationMessage.obtain(map.getString("name"), map.getString("data"));
             return ret;
         } else if (type.equals("rich")) {
-            RichContentMessage ret = RichContentMessage.obtain(map.getString("title"), map.getString("content"), map.getString("imgUrl"), map.getString("url"));
+            RichContentMessage ret = RichContentMessage.obtain(map.getString("title"), map.getString("content"), map.getString("imageUrl"), map.getString("url"));
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
             }
@@ -232,7 +232,7 @@ public class Utils {
             double lat = map.getDouble("lat");
             double lng = map.getDouble("lng");
             String poi = map.getString("poi");
-            Uri imgUri = Uri.parse(map.getString("imgUrl"));
+            Uri imgUri = Uri.parse(map.getString("imageUrl"));
             LocationMessage ret = LocationMessage.obtain(lat, lng, poi, imgUri);
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
