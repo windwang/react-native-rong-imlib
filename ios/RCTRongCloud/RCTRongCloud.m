@@ -506,7 +506,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
     }else if([messageContent isKindOfClass:[RCLocationMessage class]]){
         RCLocationMessage *message=(RCLocationMessage*)messageContent;
         dic[@"type"]=@"location";
-        dic[@"imageUrl"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
+        //dic[@"content"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
         dic[@"poi"]=message.locationName;
         dic[@"lat"]=@(message.location.latitude);
         dic[@"lng"]=@(message.location.longitude);
