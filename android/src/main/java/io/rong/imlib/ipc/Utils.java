@@ -106,7 +106,7 @@ public class Utils {
             ret.putDouble("longitude", locationMessage.getLng());
             ret.putString("poi", locationMessage.getPoi());
             if (locationMessage.getImgUri() != null) {
-                ret.putString("imgUri", locationMessage.getImgUri().toString());
+                ret.putString("imgUrl", locationMessage.getImgUri().toString());
             }
             ret.putString("base64", locationMessage.getBase64());
             ret.putString("extra", locationMessage.getExtra());
@@ -232,7 +232,7 @@ public class Utils {
             double lat = map.getDouble("lat");
             double lng = map.getDouble("lng");
             String poi = map.getString("poi");
-            Uri imgUri = Uri.parse(map.getString("imgUri"));
+            Uri imgUri = Uri.parse(map.getString("imgUrl"));
             LocationMessage ret = LocationMessage.obtain(lat, lng, poi, imgUri);
             if (map.hasKey("extra")) {
                 ret.setExtra(map.getString("extra"));
