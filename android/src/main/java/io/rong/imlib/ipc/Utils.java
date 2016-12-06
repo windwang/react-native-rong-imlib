@@ -102,13 +102,13 @@ public class Utils {
         } else if (content instanceof LocationMessage) {
             LocationMessage locationMessage = (LocationMessage) content;
             ret.putString("type", "location");
-            ret.putDouble("latitude", locationMessage.getLat());
-            ret.putDouble("longitude", locationMessage.getLng());
+            ret.putDouble("lat", locationMessage.getLat());
+            ret.putDouble("lng", locationMessage.getLng());
             ret.putString("poi", locationMessage.getPoi());
-            if (locationMessage.getImgUri() != null) {
-                ret.putString("imageUrl", locationMessage.getImgUri().toString());
-            }
-            ret.putString("base64", locationMessage.getBase64());
+            // if (locationMessage.getImgUri() != null) {
+            //     ret.putString("imageUrl", locationMessage.getImgUri().toString());
+            // }
+            // ret.putString("base64", locationMessage.getBase64());
             ret.putString("extra", locationMessage.getExtra());
         } else {
             ret.putString("type", "unknown");
