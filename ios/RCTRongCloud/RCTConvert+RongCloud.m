@@ -49,7 +49,7 @@
     }else if ([@"rich" isEqualToString:type]){
         NSString *title=json[@"title"];
         NSString *content=json[@"content"];
-        NSString *imgUrl=json[@"imgUrl"];
+        NSString *imgUrl=json[@"imageUrl"];
         NSString *url=json[@"url"];
         NSString *extra=json[@"extra"];
         
