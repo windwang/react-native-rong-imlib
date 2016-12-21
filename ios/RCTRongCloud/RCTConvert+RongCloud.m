@@ -14,14 +14,14 @@
 {
     json = [self NSDictionary:json];
     
-    NSDictionary *user=[json dictionaryForKey:@"userInfo" ];
+   // NSDictionary *user=json[@"userInfo" ];
     
     NSString *type = [RCTConvert NSString:json[@"type"]];
     
     if ([@"text" isEqualToString:type]) {
         RCTextMessage* ret = [RCTextMessage messageWithContent:json[@"content"]];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
-         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+        // [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"voice" isEqualToString:type]) {
         NSString *base64 = [RCTConvert NSString:json[@"base64"]];
@@ -30,7 +30,7 @@
         
         RCVoiceMessage *ret = [RCVoiceMessage messageWithAudio:voice duration:duration];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
-         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+     //    [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"image" isEqualToString:type]) {
         NSString * uri = [RCTConvert NSString:json[@"imageUrl"]];
@@ -38,13 +38,13 @@
       
         ret.full = [json[@"full"] boolValue];
         ret.extra = [RCTConvert NSString:json[@"extra"]];
-         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+       //  [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     } else if ([@"notify" isEqualToString:type]) {
         NSString * name = [RCTConvert NSString:json[@"name"]];
         NSString * data =[RCTConvert NSString:json[@"data"]];
         RCCommandNotificationMessage* ret = [RCCommandNotificationMessage notificationWithName:name data:data];
-         [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+      //   [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     }else if ([@"rich" isEqualToString:type]){
         NSString *title=json[@"title"];
@@ -55,7 +55,7 @@
         
         RCRichContentMessage *ret=[RCRichContentMessage messageWithTitle:title digest:content imageURL:imgUrl  url:url extra:extra  ];
         
-        [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+      //  [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
     }    else {
         RCTextMessage* ret = [RCTextMessage messageWithContent:@"[未知消息]"];
