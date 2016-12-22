@@ -74,15 +74,13 @@ public class Utils {
             ImageMessage imageContent = (ImageMessage) content;
             ret.putString("type", "image");
             if (imageContent.getLocalUri() != null) {
-                ret.putString("localUri", imageContent.getLocalUri().toString());
                 ret.putString("imageUrl", imageContent.getLocalUri().toString());
             }
             if (imageContent.getThumUri() != null) {
-                ret.putString("thumUri", imageContent.getThumUri().toString());
                 ret.putString("thumb", imageContent.getThumUri().toString());
             }
             if (imageContent.getRemoteUri() != null) {
-                ret.putString("remoteUri", imageContent.getRemoteUri().toString());
+                ret.putString("imageUrl", imageContent.getRemoteUri().toString());
             }
             ret.putString("extra", imageContent.getExtra());
         } else if (content instanceof CommandNotificationMessage) {
