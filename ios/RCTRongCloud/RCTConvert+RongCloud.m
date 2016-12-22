@@ -57,7 +57,13 @@
         
       //  [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
-    }    else {
+    } else if([@"location" isEqualToString:type]){
+        CLLocationCoordinate2D location=CLLocationCoordinate2DMake([[json objectForKey:@"lat"] doubleValue],[[json objectForKey:@"lng"] doubleValue]);
+        RCLocationMessage *ret = [RCLocationMessage messageWithLocationImage:nil location:location locationName:[json valueForKey:@"poi"]];
+        ret.extra=[RCTConvert NSString:json[@"extra"]];
+        // [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
+        return ret;
+    }     else {
         RCTextMessage* ret = [RCTextMessage messageWithContent:@"[未知消息]"];
         return ret;
     }

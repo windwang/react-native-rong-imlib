@@ -246,10 +246,10 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
         [self sendImageMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
         return;
     }
-    if ([[json valueForKey:@"type"] isEqualToString:@"location"]) {
+    /*if ([[json valueForKey:@"type"] isEqualToString:@"location"]) {
         [self sendLocationMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
         return;
-    }
+    }*/
     RCMessageContent* content = [RCTConvert RCMessageContent:json];
     [content setSenderUserInfo:_userInfo];
     RCIMClient* client = [RCIMClient sharedRCIMClient];
