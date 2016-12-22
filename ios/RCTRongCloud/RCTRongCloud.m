@@ -486,7 +486,7 @@ RCT_EXPORT_METHOD(stopPlayVoice)
         } else {
             dic[@"imageUrl"] = message.imageUrl;
         }
-        dic[@"thumb"] = [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];
+       // dic[@"thumb"] = [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];
         dic[@"extra"] = message.extra;
     }
     else if ([messageContent isKindOfClass:[RCCommandNotificationMessage class]]){
