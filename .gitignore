@@ -2,6 +2,8 @@
 /node_modules
 /android/build
 *.iml
+/.vscode
+jsconfig.json
 
 # OSX
 #
