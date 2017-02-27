@@ -1,1 +1,4 @@
 -keep class io.rong.imlib.ipc.NotificationReceiver {*;}
+-dontwarn com.xiaomi.mipush.sdk.**
+-keep public class com.xiaomi.mipush.sdk.* {*; }
+-keep public class com.google.android.gms.gcm.**
