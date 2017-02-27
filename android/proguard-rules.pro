@@ -1,1 +1,1 @@
--keep class io.rong.app.DemoNotificationReceiver {*;}
+-keep class io.rong.imlib.ipc.NotificationReceiver {*;}
