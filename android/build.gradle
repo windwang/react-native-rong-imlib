@@ -49,5 +49,7 @@ android {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    compile group: 'com.google.code.gson', name: 'gson', version: 'latest.release'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
