@@ -193,6 +193,8 @@ resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
                 dic[@"messageId"] = @(messageId);
                 dic[@"errCode"] = @((int)errorCode);
                 [self sendEventWithName:@"msgSendFailed" body:dic];
+            } cancel:^(long messageId) {
+                
             }];
             
             resolve([self.class _convertMessage:msg]);
