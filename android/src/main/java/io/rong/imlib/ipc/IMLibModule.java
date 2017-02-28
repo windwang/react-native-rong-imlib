@@ -1,9 +1,12 @@
 package io.rong.imlib.ipc;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
@@ -33,6 +36,7 @@ import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
 import io.rong.imlib.model.MessageContent;
 import io.rong.imlib.model.UserInfo;
+import io.rong.push.RongPushClient;
 
 /**
  * Created by tdzl2003 on 3/31/16.
@@ -46,8 +50,27 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     super(reactContext);
     context = reactContext;
 
+
     if (!isIMClientInited) {
       isIMClientInited = true;
+
+      ApplicationInfo appInfo = null;
+      try {
+        appInfo = reactContext.getPackageManager().getApplicationInfo(reactContext.getPackageName(), PackageManager.GET_META_DATA);
+
+        if (appInfo != null) {
+          Bundle bundle = appInfo.metaData;
+          String miKey=bundle.getString("MI_APP_KEY");
+          String miSecret=bundle.getString("MI_APP_SECRET");
+          if(miKey!=null&&miSecret!=null){
+            RongPushClient.registerMiPush(reactContext.getApplicationContext(), miKey, miSecret);
+          }
+        }
+      } catch (PackageManager.NameNotFoundException e) {
+        e.printStackTrace();
+      }
+
+
       RongIMClient.init(reactContext.getApplicationContext());
     }
   }

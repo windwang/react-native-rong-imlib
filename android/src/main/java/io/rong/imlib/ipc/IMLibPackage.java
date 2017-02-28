@@ -15,7 +15,11 @@ import java.util.List;
  */
 public class IMLibPackage implements ReactPackage {
 
-    @Override
+  public IMLibPackage() {
+  }
+
+
+  @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.asList(new NativeModule[]{
                 // Modules from third-party

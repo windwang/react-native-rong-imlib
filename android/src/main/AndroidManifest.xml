@@ -144,6 +144,16 @@
             android:name="RONG_CLOUD_APP_KEY"
             android:value="${RONG_CLOUD_APP_KEY}" />
 
+
+      <meta-data
+        android:name="MI_APP_KEY"
+        android:value="${MI_APP_KEY}\0" />
+      <meta-data
+        android:name="MI_APP_SECRET"
+        android:value="${MI_APP_SECRET}" />
+
+
+
     </application>
 
 </manifest>
