@@ -61,9 +61,9 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
         if (appInfo != null) {
           Bundle bundle = appInfo.metaData;
           String miKey=bundle.getString("MI_APP_KEY");
-          String miSecret=bundle.getString("MI_APP_SECRET");
-          if(miKey!=null&&miSecret!=null){
-            RongPushClient.registerMiPush(reactContext.getApplicationContext(), miKey, miSecret);
+          String miId=bundle.getString("MI_APP_ID");
+          if(miKey!=null&&miId!=null){
+            RongPushClient.registerMiPush(reactContext.getApplicationContext(), miId,  miKey);
           }
         }
       } catch (PackageManager.NameNotFoundException e) {
