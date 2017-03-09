@@ -185,7 +185,7 @@ RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSStrin
     
     
     RCMessage *msg=[client sendMediaMessage:type targetId:targetId content:content pushContent:nil pushData:nil progress:^(int progress, long messageId) {
-        [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+    
     } success:^(long messageId) {
         [self sendEventWithName:@"msgSendOk" body:@(messageId)];
     } error:^(RCErrorCode errorCode, long messageId) {
