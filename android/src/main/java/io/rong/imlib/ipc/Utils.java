@@ -108,6 +108,28 @@ public class Utils {
             // }
             // ret.putString("base64", locationMessage.getBase64());
             ret.putString("extra", locationMessage.getExtra());
+        } else if (content instanceof FileMessage) {
+            FileMessage imageContent = (FileMessage) content;
+            ret.putString("type", "media");
+            if (imageContent.getMediaUrl() != null) {
+                ret.putString("mediaUrl", imageContent.getMediaUrl().toString());
+            }
+            if (imageContent.getFileUrl() != null) {
+                ret.putString("mediaUrl", imageContent.getFileUrl().toString());
+            }
+            ret.putString("name", imageContent.getName());
+            ret.putString("contentType",imageContent.getType());
+            if (imageContent.getExtra() != null) {
+                try {
+                    JSONObject jsonObject = new JSONObject(imageContent.getExtra());
+                    ret.putString("thumb", jsonObject.getString("thumb"));
+                    ret.putString("extra", jsonObject.getString("extra"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return ret;
         } else {
             ret.putString("type", "unknown");
         }
@@ -237,8 +259,28 @@ public class Utils {
             }
             setMessageUserInfo(ret, map);
             return ret;
+        } else if ("media".equals(type)) {//多媒体消息
+            FileMessage mediaMessage = FileMessage.obtain(Uri.parse(map.getString("mediaUrl")));
+            if(map.hasKey("contentType")){
+                mediaMessage.setType(map.getString("contentType"));
+            }
+            JSONObject extra = new JSONObject();
+            try {
+                extra.put("__type__", "media");
+                if (map.hasKey("thumb"))
+                    extra.put("thumb", map.getString("thumb"));
+                if (map.hasKey("extra")) {
+                    extra.put("extra", map.getString("extra"));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mediaMessage.setExtra(extra.toString());
+            setMessageUserInfo(mediaMessage, map);
+            return mediaMessage;
+        } else {
+            return TextMessage.obtain("[未知消息]");
         }
-        return TextMessage.obtain("[未知消息]");
     }
 
     public interface ImageCallback {
