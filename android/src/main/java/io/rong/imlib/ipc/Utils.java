@@ -129,7 +129,6 @@ public class Utils {
                 }
 
             }
-            return ret;
         } else {
             ret.putString("type", "unknown");
         }
