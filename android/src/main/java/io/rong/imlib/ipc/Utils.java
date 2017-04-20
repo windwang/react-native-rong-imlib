@@ -7,6 +7,7 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 
 import com.facebook.common.executors.UiThreadImmediateExecutorService;
 import com.facebook.common.references.CloseableReference;
@@ -29,9 +30,13 @@ import io.rong.message.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import io.rong.imlib.model.Conversation;
@@ -267,7 +272,7 @@ public class Utils {
             try {
                 extra.put("__type__", "media");
                 if (map.hasKey("thumb"))
-                    extra.put("thumb", map.getString("thumb"));
+                    extra.put("thumb", getStringFile(Uri.parse(map.getString("thumb"))));
                 if (map.hasKey("extra")) {
                     extra.put("extra", map.getString("extra"));
                 }
@@ -335,5 +340,27 @@ public class Utils {
         ImageMessage imgMsg = ImageMessage.obtain(Uri.fromFile(imageFileThumb), Uri.fromFile(imageFileSource));
 
         return imgMsg;
+    }
+
+    public static String getStringFile(Uri fileName) {
+        InputStream inputStream = null;//You can get an inputStream using any IO API
+        try {
+            inputStream = new FileInputStream(fileName.getPath());
+        } catch (FileNotFoundException e) {
+            return "";
+        }
+        byte[] bytes;
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bytes = output.toByteArray();
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
 }
