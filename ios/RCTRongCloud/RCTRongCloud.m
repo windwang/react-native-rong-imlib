@@ -228,6 +228,32 @@ RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSStrin
     
     return;
 }
+-(void)sendMediaMessage:(RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json pushContent: (NSString*) pushContent pushData:(NSString*) pushData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject{
+    
+    RCImageMessage *content = [RCTConvert RCMessageContent:json];
+    [content setSenderUserInfo:_userInfo];
+   
+    
+    
+    RCIMClient* client = [RCIMClient sharedRCIMClient];
+    
+    
+    RCMessage *msg=[client sendMediaMessage:type targetId:targetId content:content pushContent:nil pushData:nil progress:^(int progress, long messageId) {
+        
+    } success:^(long messageId) {
+        [self sendEventWithName:@"msgSendOk" body:@(messageId)];
+    } error:^(RCErrorCode errorCode, long messageId) {
+        NSMutableDictionary* dic = [NSMutableDictionary new];
+        dic[@"messageId"] = @(messageId);
+        dic[@"errCode"] = @((int)errorCode);
+        [self sendEventWithName:@"msgSendFailed" body:dic];
+    } cancel:^(long messageId) {
+        
+    }];
+    resolve([self.class _convertMessage:msg]);
+    
+
+}
 
 RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) targetId content:(NSDictionary*) json
                   pushContent: (NSString*) pushContent pushData:(NSString*) pushData
@@ -236,6 +262,11 @@ RCT_EXPORT_METHOD(sendMessage: (RCConversationType) type targetId:(NSString*) ta
     
     if ([[json valueForKey:@"type"] isEqualToString:@"image"]) {
         [self sendImageMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
+        
+        return;
+    }
+    if ([[json valueForKey:@"type"] isEqualToString:@"media"]) {
+        [self sendMediaMessage:type targetId:targetId content:json pushContent:pushContent pushData:pushData resolve:resolve reject:reject];
         
         return;
     }
@@ -504,6 +535,18 @@ RCT_EXPORT_METHOD(stopPlayVoice)
         dic[@"lat"]=@(message.location.latitude);
         dic[@"lng"]=@(message.location.longitude);
         dic[@"extra"]=message.extra;
+        
+    }else if([messageContent isKindOfClass:[RCFileMessage class]]){
+        RCFileMessage *message=(RCFileMessage*)messageContent;
+        dic[@"type"]=@"media";
+        //dic[@"content"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
+        dic[@"contentType"]=message.type;
+        NSData *extraData=[[message extra] dataUsingEncoding:NSUTF8StringEncoding];
+        id allkeys=[NSJSONSerialization JSONObjectWithData:extraData options:NSJSONWritingPrettyPrinted error:nil];
+        
+        dic[@"thumb"]=allkeys[@"thumb"];
+        
+        dic[@"extra"]=allkeys[@"extra"];
         
     } else {
         dic[@"type"] = @"unknown";

@@ -7,7 +7,7 @@
 //
 
 #import "RCTConvert+RongCloud.h"
-
+#import <Photos/Photos.h>
 @implementation RCTConvert(RongCloud)
 
 + (RCMessageContent *)RCMessageContent:(id)json;
@@ -63,10 +63,44 @@
         ret.extra=[RCTConvert NSString:json[@"extra"]];
         // [ret setSenderUserInfo:[RCTConvert RCUserInfo:user]];
         return ret;
-    }     else {
+    }else if([@"media" isEqualToString:type]){
+        RCFileMessage *ret=[RCFileMessage messageWithFile:[json objectForKey:@"mediaUrl"]];
+        if(json[@"contentType"]){
+            ret.type=json[@"contentType"];
+            //[ret setType:json[@"contentType"]];
+        }
+        
+        NSMutableDictionary *dic = [NSMutableDictionary new];
+        dic[@"__type__"]=@"media";
+        dic[@"extra"]=json[@"extra"];
+        
+        if(json[@"thumb"]){
+            
+            NSData *data=[NSData dataWithContentsOfFile:json[@"thumb"]];
+            if(data==nil){
+                data= [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:json[@"thumb"]]];
+
+//                PHFetchResult *fetchResult = [PHAsset fetchAssetsWithALAssetURLs:@[[NSURL fileURLWithPath:json[@"thumb"]]] options:nil];
+//                PHAsset *asset = fetchResult.firstObject;
+               
+            }
+                      NSString *contentString=[data base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength];
+            
+            dic[@"thumb"]=contentString;
+        }
+        NSData *extraData=[NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil];
+        
+        ret.extra=[[NSString alloc]initWithData:extraData encoding:NSUTF8StringEncoding];
+
+      
+        
+        return ret;
+    }else {
         RCTextMessage* ret = [RCTextMessage messageWithContent:@"[未知消息]"];
         return ret;
     }
+        
+        
 //    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:json[@"userId"] name:json[@"name"] portrait:json[@"portraitUri"]];
 //    return userInfo;
 }
