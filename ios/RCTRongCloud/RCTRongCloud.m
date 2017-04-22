@@ -541,9 +541,13 @@ RCT_EXPORT_METHOD(stopPlayVoice)
         dic[@"type"]=@"media";
         //dic[@"content"]= [NSString stringWithFormat:@"data:image/png;base64,%@", [UIImagePNGRepresentation(message.thumbnailImage) base64EncodedStringWithOptions:0]];;
         dic[@"contentType"]=message.type;
+        if(message.fileUrl)
+            dic[@"mediaUrl"]=message.fileUrl;
+        if(message.localPath)
+              dic[@"mediaUrl"]=message.localPath;
         NSData *extraData=[[message extra] dataUsingEncoding:NSUTF8StringEncoding];
         id allkeys=[NSJSONSerialization JSONObjectWithData:extraData options:NSJSONWritingPrettyPrinted error:nil];
-        
+       
         dic[@"thumb"]=allkeys[@"thumb"];
         
         dic[@"extra"]=allkeys[@"extra"];
