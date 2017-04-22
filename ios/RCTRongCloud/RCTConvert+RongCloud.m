@@ -76,15 +76,11 @@
         
         if(json[@"thumb"]){
             
-            NSData *data=[NSData dataWithContentsOfFile:json[@"thumb"]];
-            if(data==nil){
-                data= [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:json[@"thumb"]]];
-
-//                PHFetchResult *fetchResult = [PHAsset fetchAssetsWithALAssetURLs:@[[NSURL fileURLWithPath:json[@"thumb"]]] options:nil];
-//                PHAsset *asset = fetchResult.firstObject;
-               
-            }
-                      NSString *contentString=[data base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength];
+            UIImage *image= [UIImage imageWithContentsOfFile:json[@"thumb"]];
+       
+            NSData *data=[RCUtilities compressedImageAndScalingSize:image targetSize:CGSizeMake(30, 40) percent:0.8];
+            
+            NSString *contentString=[data base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength];
             
             dic[@"thumb"]=contentString;
         }
