@@ -78,7 +78,7 @@
             
             UIImage *image= [UIImage imageWithContentsOfFile:json[@"thumb"]];
        
-            NSData *data=[RCUtilities compressedImageAndScalingSize:image targetSize:CGSizeMake(30, 40) percent:0.8];
+            NSData *data=[RCUtilities compressedImageAndScalingSize:image targetSize:CGSizeMake(64, 96) percent:0.8];
             
             NSString *contentString=[data base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength];
             
