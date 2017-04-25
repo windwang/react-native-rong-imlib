@@ -117,11 +117,11 @@ public class Utils {
     } else if (content instanceof FileMessage) {
       FileMessage imageContent = (FileMessage) content;
       ret.putString("type", "media");
-      if (imageContent.getLocalPath() != null) {
-        ret.putString("mediaUrl", imageContent.getLocalPath().toString());
-      }
       if (imageContent.getFileUrl() != null) {
         ret.putString("mediaUrl", imageContent.getFileUrl().toString());
+      }
+      if (imageContent.getLocalPath() != null) {
+        ret.putString("mediaUrl", imageContent.getLocalPath().toString());
       }
       ret.putString("name", imageContent.getName());
       ret.putString("contentType", imageContent.getType());
