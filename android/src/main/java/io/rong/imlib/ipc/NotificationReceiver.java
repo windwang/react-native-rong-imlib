@@ -33,7 +33,6 @@ import io.rong.push.notification.PushMessageReceiver;
 import io.rong.push.notification.PushNotificationMessage;
 
 import static android.content.Context.ACTIVITY_SERVICE;
-import static com.facebook.react.common.ApplicationHolder.getApplication;
 
 /**
  * Created by wwm on 2016-11-07.
@@ -148,7 +147,7 @@ public class NotificationReceiver extends PushMessageReceiver {
 
     context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
       .emit(eventName, params);
-    if (!isApplicationInForeground()) {
+    if (!isApplicationInForeground(context)) {
       Intent intent = new Intent(context, getMainActivityClass(context));
 
       intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -198,11 +197,11 @@ public class NotificationReceiver extends PushMessageReceiver {
     }
   }
 
-  private boolean isApplicationInForeground() {
-    ActivityManager activityManager = (ActivityManager) getApplication().getSystemService(ACTIVITY_SERVICE);
+  private boolean isApplicationInForeground(ReactContext context) {
+    ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
     List<ActivityManager.RunningAppProcessInfo> processInfos = activityManager.getRunningAppProcesses();
     for (ActivityManager.RunningAppProcessInfo processInfo : processInfos) {
-      if (processInfo.processName.equals(getApplication().getPackageName())) {
+      if (processInfo.processName.equals(context.getPackageName())) {
         if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
           for (String d : processInfo.pkgList) {
             return true;
