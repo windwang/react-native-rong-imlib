@@ -346,9 +346,10 @@ RCT_EXPORT_METHOD(finishRecordVoice)
     [_voiceManager finishRecord];
 }
 
-RCT_EXPORT_METHOD(startPlayVoice:(RCMessageContent *)voice rosolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(startPlayVoice:(NSDictionary*)json rosolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
-    [_voiceManager startPlayVoice:(RCVoiceMessage *)voice result:^(NSError *error, NSDictionary *result) {
+    RCVoiceMessage* voice = (RCVoiceMessage *)[RCTConvert RCMessageContent:json];
+    [_voiceManager startPlayVoice:voice result:^(NSError *error, NSDictionary *result) {
         if (error) {
             reject([NSString stringWithFormat:@"%ld", error.code], error.description, error);
         }
